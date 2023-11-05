@@ -9,7 +9,7 @@
 
 int main(int argc, char* argv[])
 {
-    std::string path_img = "../data/test.png";
+    std::string path_img = "../data/test3.png";
     cv::Mat image = cv::imread(path_img);
     
     SeamSmooth seam_smoother;

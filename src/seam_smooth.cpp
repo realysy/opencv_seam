@@ -8,13 +8,15 @@ int SeamSmooth::Run(const cv::Mat& img)
 {
     printf("Input wh = %d,%d\n", img.cols, img.rows);
     for (int r=0; r<img.rows; ++r) {
-        seam_line_.emplace_back(cv::Point2i(302, r));
+        int x = 375 - 11.0 / 1123 * (r - 0);
+        seam_line_.emplace_back(cv::Point2i(x, r));
     }
 
     cv::Mat mask = gen_seam_mask(img);
     cv::Mat img_smoothed = seam_smooth(img, mask);
 
-    cv::imshow("Filtered Image", img_smoothed);
+    // cv::imwrite("../data/01_9f47115_w10_f10.png", img_smoothed);
+    cv::imshow("img", img_smoothed);
     cv::waitKey(0);
 
 
@@ -46,14 +48,23 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img, const cv::Mat& mask)
     cv::Mat img_target = cv::Mat::zeros(img.size(), img.type());
     img.copyTo(img_target, mask);
 
+    // 每个点的颜色 = 周围9个点的平均值, 如果8邻域某个点颜色差异较大，则忽略该邻域点
     auto smooth_color = [&] (int i, int j, int channel) {
         int color = 0;
         int count = 0;
         // 3*3 区域
-        const int avg_width = 10;
+        const int avg_width = 20;
+
+        uchar color_ij = img.at<cv::Vec3b>(i, j)[channel];
         for (int m=i-avg_width; m<=i+avg_width; ++m) {
             for (int n=j-avg_width; n<=j+avg_width; ++n) {
                 if (m < 0 || m >= img.rows || n < 0 || n >= img.cols) {
+                    continue;
+                }
+
+                uchar color_mn = img.at<cv::Vec3b>(m, n)[channel];
+
+                if (std::abs(color_mn - color_ij) > 15) {
                     continue;
                 }
 
@@ -71,7 +82,6 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img, const cv::Mat& mask)
                 continue;
             }
 
-            // 每个点的颜色 = 周围9个点的平均值
             img_target.at<cv::Vec3b>(i, j)[0] = smooth_color(i, j, 0);
             img_target.at<cv::Vec3b>(i, j)[1] = smooth_color(i, j, 1);
             img_target.at<cv::Vec3b>(i, j)[2] = smooth_color(i, j, 2);

@@ -14,6 +14,6 @@ protected:
 
 private:
     std::vector<cv::Point2i> seam_line_;
-    int smooth_width_ = 10;
+    int smooth_width_ = 30;
 
 };
