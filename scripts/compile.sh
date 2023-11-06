@@ -5,7 +5,7 @@ abi=x64
 cd ../
 mkdir -p bin_$abi
 
-# rm -rf build_$abi && mkdir build_$abi
+rm -rf build_$abi && mkdir build_$abi
 cd build_$abi
 # make clean
 
