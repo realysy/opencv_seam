@@ -7,6 +7,7 @@ endif()
 
 
 find_package(OpenCV REQUIRED)
+find_package(fmt REQUIRED)
 
 set(ThirdLibs "${OpenCV_LIBRARIES}")
 
@@ -20,4 +21,4 @@ add_executable(test
     ${PROJECT_SOURCE_DIR}/test/test.cpp
     ${SrcFiles}
 )
-target_link_libraries(test ${ThirdLibs})
+target_link_libraries(test ${ThirdLibs} fmt::fmt)

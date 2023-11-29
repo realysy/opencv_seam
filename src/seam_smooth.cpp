@@ -15,9 +15,11 @@ int SeamSmooth::Run(const cv::Mat& img)
     cv::Mat mask = gen_seam_mask(img);
     cv::Mat img_smoothed = seam_smooth(img, mask);
 
-    // cv::imwrite("../data/01_9f47115_w10_f10.png", img_smoothed);
-    cv::imshow("img", img_smoothed);
-    cv::waitKey(0);
+    cv::imwrite("../data/01_3da5583_sw30_fw20.png", img_smoothed);
+    // cv::namedWindow("img", cv::WINDOW_NORMAL);
+    // cv::resizeWindow("img", img_smoothed.size() / 2);
+    // cv::imshow("img", img_smoothed);
+    // cv::waitKey(0);
 
 
     return 0;
