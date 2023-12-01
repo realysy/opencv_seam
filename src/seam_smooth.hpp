@@ -8,11 +8,12 @@ class SeamSmooth
 {
 public:
     int Run(const cv::Mat& img);
-
-protected:
     cv::Mat seam_smooth(const cv::Mat& img);
 
+protected:
+
 private:
-    int seam_width_ = 60;
+    int seam_width_ = 40;
+    int left_bottom_y_ = 637;
 
 };

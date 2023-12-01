@@ -30,7 +30,7 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
     };
 
     // 每个点的颜色 = 周围一些点的平均值, 如果8邻域某个点颜色差异较大，则忽略该邻域点
-    auto smooth_color = [&] (int i, int j) {
+    auto smooth_color = [&] (int i, int j, int kernel_w, int kernel_h, int threshold) {
         cv::Vec4b color_current = img.at<cv::Vec4b>(i, j);
         int color_sum_b = color_current[0];
         int color_sum_g = color_current[1];
@@ -38,17 +38,15 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
         int count = 1;
 
         // 在一个小区域内求均值(比如5*5)
-        const int avg_height = 5;
-        const int avg_width = 10;
-        for (int m=i-avg_height; m<=i+avg_height; ++m) {
-            for (int n=j-avg_width; n<=j+avg_width; ++n) {
+        for (int m=i-kernel_h; m<=i+kernel_h; ++m) {
+            for (int n=j-kernel_w; n<=j+kernel_w; ++n) {
                 if (m < 0 || m >= img.rows || n < 0 || n >= img.cols) {
                     continue;
                 }
 
                 // 颜色差异过大则不用于求均值
                 cv::Vec4b color_around = img.at<cv::Vec4b>(m, n);
-                if (diff_color_vec4b(color_current, color_around) > 440) {
+                if (diff_color_vec4b(color_current, color_around) > threshold) {
                     continue;
                 }
 
@@ -63,10 +61,19 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
         return color_result;
     };
 
-    for (int i=0; i<img.rows; ++i) {
-        for (int j=0; j<img.cols; ++j) {
-            img_smooth.at<cv::Vec4b>(i, j) = smooth_color(i, j);
+    // 有效图像部分
+    for (int i = 0; i < left_bottom_y_; ++i) {
+        for (int j = 0; j < img.cols; ++j) {
+            img_smooth.at<cv::Vec4b>(i, j) = smooth_color(i, j, 10, 5, 440);
         }
+    }
+
+    // 拉伸模糊的部分
+    const int kernel_h = 1;
+    const int target_i = std::min(left_bottom_y_ + kernel_h + 10, img.rows - kernel_h - 10);
+    for (int j = 0; j < img.cols; ++j) {
+        cv::Vec4b new_color = smooth_color(target_i, j, 10, kernel_h, 2500);
+        img_smooth.rowRange(left_bottom_y_, img.rows).col(j) = new_color;
     }
 
     return img_smooth;
