@@ -10,11 +10,9 @@ public:
     int Run(const cv::Mat& img);
 
 protected:
-    cv::Mat gen_seam_mask(const cv::Mat& img);
-    cv::Mat seam_smooth(const cv::Mat& img, const cv::Mat& mask);
+    cv::Mat seam_smooth(const cv::Mat& img);
 
 private:
-    std::vector<cv::Point2i> seam_line_;
-    int smooth_width_ = 30;
+    int seam_width_ = 60;
 
 };
