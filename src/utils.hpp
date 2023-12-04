@@ -40,5 +40,3 @@ void print_vec(const std::vector<Tp>& vec)
 {
     fmt::print("[{}]\n", fmt::join(vec, ", "));
 }
-
-cv::Mat join_left_right(const cv::Mat& img);

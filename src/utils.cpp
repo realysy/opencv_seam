@@ -72,12 +72,3 @@ void HSL2RGB(double H,double S,double L, double &R,double &G,double &B)
     }
 }
 
-cv::Mat join_left_right(const cv::Mat& img)
-{
-    int seam_width = 40;
-    cv::Mat img_seam(cv::Size2i(seam_width, img.rows), img.type());
-    img.rowRange(0, img.rows).colRange(img.cols - seam_width/2, img.cols).copyTo(img_seam(cv::Rect(0,0, seam_width/2, img.rows)));
-    img.rowRange(0, img.rows).colRange(0, seam_width/2).copyTo(img_seam(cv::Rect(seam_width/2, 0, seam_width/2, img.rows)));
-
-    return img_seam;
-}

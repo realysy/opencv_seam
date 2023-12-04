@@ -19,6 +19,16 @@ int SeamSmooth::Run(const cv::Mat& img)
     return 0;
 }
 
+cv::Mat SeamSmooth::join_left_right(const cv::Mat& img)
+{
+    cv::Mat img_seam(cv::Size2i(seam_width_, img.rows), img.type());
+    const int half_width = seam_width_ / 2;
+    img.rowRange(0, img.rows).colRange(img.cols - half_width, img.cols).copyTo(img_seam(cv::Rect(0,0, half_width, img.rows)));
+    img.rowRange(0, img.rows).colRange(0, half_width).copyTo(img_seam(cv::Rect(half_width, 0, half_width, img.rows)));
+
+    return img_seam;
+}
+
 cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
 {
     cv::Mat img_smooth = img.clone();
@@ -79,3 +89,9 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
     return img_smooth;
 }
 
+void SeamSmooth::apply_left_right(const cv::Mat& img_smooth, cv::Mat& img)
+{
+    const int half_width = seam_width_ / 2;
+    img_smooth.rowRange(0, img_smooth.rows).colRange(0, half_width).copyTo(img(cv::Rect(img.cols - half_width, 0, half_width, img_smooth.rows)));
+    img_smooth.rowRange(0, img_smooth.rows).colRange(half_width, img_smooth.cols).copyTo(img(cv::Rect(0, 0, half_width, img_smooth.rows)));
+}

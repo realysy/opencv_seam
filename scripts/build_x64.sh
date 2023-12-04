@@ -1,5 +1,5 @@
 #!/bin/bash
-build_type=Debug  # Debug, Release
+build_type=Release  # Debug, Release
 abi=x64
 
 cd ../
