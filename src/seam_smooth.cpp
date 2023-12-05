@@ -19,6 +19,9 @@ int SeamSmooth::Run(const cv::Mat& img)
     return 0;
 }
 
+/*
+img: final pano
+*/
 cv::Mat SeamSmooth::join_left_right(const cv::Mat& img)
 {
     cv::Mat img_seam(cv::Size2i(seam_width_, img.rows), img.type());
@@ -29,6 +32,9 @@ cv::Mat SeamSmooth::join_left_right(const cv::Mat& img)
     return img_seam;
 }
 
+/*
+img: join of left and right
+*/
 cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
 {
     cv::Mat img_smooth = img.clone();
@@ -37,6 +43,13 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
         return std::pow(color1[0] - color2[0], 2) +     // b
                 std::pow(color1[1] - color2[1], 2) +    // g
                 std::pow(color1[2] - color2[2], 2);     // r
+    };
+    auto diff_color_vec3b_single = [&] (const cv::Vec3b& color1, const cv::Vec3b& color2, int channel) {
+        return std::abs(color1[channel] - color2[channel]);
+    };
+    auto diff_color_vec3b_two = [&] (const cv::Vec3b& color1, const cv::Vec3b& color2, int c1, int c2) {
+        return std::pow(color1[c1] - color2[c1], 2) +
+                std::pow(color1[c2] - color2[c2], 2);
     };
 
     // 每个点的颜色 = 周围一些点的平均值, 如果8邻域某个点颜色差异较大，则忽略该邻域点
