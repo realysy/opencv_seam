@@ -54,6 +54,7 @@ int main(int argc, char* argv[])
 
         cv::Mat img_seam = seam_smoother.join_left_right(img);
         cv::Mat img_smooth = seam_smoother.seam_smooth(img_seam);
+        // cv::Mat img_smooth = seam_smoother.seam_inpaint(img_seam);
         seam_smoother.apply_left_right(img_smooth, img);
 
         // cv::imwrite(path_seam_raw, img_seam);

@@ -95,3 +95,34 @@ void SeamSmooth::apply_left_right(const cv::Mat& img_smooth, cv::Mat& img)
     img_smooth.rowRange(0, img_smooth.rows).colRange(0, half_width).copyTo(img(cv::Rect(img.cols - half_width, 0, half_width, img_smooth.rows)));
     img_smooth.rowRange(0, img_smooth.rows).colRange(half_width, img_smooth.cols).copyTo(img(cv::Rect(0, 0, half_width, img_smooth.rows)));
 }
+
+
+
+cv::Mat SeamSmooth::seam_inpaint(const cv::Mat& img)
+{
+    cv::Mat mask = gen_seam_mask(img);
+    cv::imwrite("./mask.png", mask);
+    
+    cv::Mat img_3;
+    cv::cvtColor(img, img_3, cv::COLOR_BGRA2BGR);
+    cv::Mat img_smooth;
+    int radius = std::min(9, seam_width_ / 2);
+    cv::inpaint(img_3, mask, img_smooth, radius, cv::INPAINT_TELEA);
+    cv::imwrite("./img_smooth.png", img_smooth);
+
+    cv::cvtColor(img_smooth, img_smooth, cv::COLOR_BGR2BGRA);
+    return img_smooth;
+}
+
+// call once
+cv::Mat SeamSmooth::gen_seam_mask(const cv::Mat& img)
+{
+    cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
+    int line_x = img.cols / 2;
+    int line_half_w = std::min(40, seam_width_ / 2);
+    mask.rowRange(0, img.rows).colRange(line_x - line_half_w, line_x + line_half_w) = 255;
+
+    return mask;
+}
+
+
