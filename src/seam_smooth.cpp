@@ -103,7 +103,7 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
 }
 
 /*
-方案1: 
+方案1: 接缝附近都是白色
 空白dst, right粘贴到右边，left clone到左边，right clone到右边
 
 方案2: 接缝附近变成黑白; 接缝被模糊了
@@ -113,7 +113,7 @@ cv::Mat SeamSmooth::seam_possion(const cv::Mat& img)
 {
     const int half_w = seam_width_ / 2;
 
-    cv::Mat dst = img.clone();
+    cv::Mat dst(img.size(), img.type(), cv::Scalar(255,255,255,0));
     cv::imwrite("./dst.png", dst);
 
     // 底图全图进行高斯模糊
@@ -133,6 +133,8 @@ cv::Mat SeamSmooth::seam_possion(const cv::Mat& img)
     cv::imwrite("./src.png", right);
     cv::imwrite("./mask.png", mask);
 
+    cv::seamlessClone(right, dst, mask, cv::Point2i(half_w + half_w / 2, dst.rows / 2), dst, 3);
+    cv::imwrite("./result_0.png", dst);
     cv::seamlessClone(left, dst, mask, cv::Point2i(half_w / 2, dst.rows / 2), dst, 3);
     cv::imwrite("./result_1.png", dst);
     cv::seamlessClone(right, dst, mask, cv::Point2i(half_w + half_w / 2, dst.rows / 2), dst, 3);
