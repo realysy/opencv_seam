@@ -87,7 +87,7 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
     // 有效图像部分
     for (int i = 0; i < left_bottom_y_; ++i) {
         for (int j = 0; j < img.cols; ++j) {
-            img_smooth.at<cv::Vec4b>(i, j) = smooth_color(i, j, 10, 5, 440);
+            img_smooth.at<cv::Vec4b>(i, j) = smooth_color(i, j, 10, 5, 600);
         }
     }
 
@@ -102,6 +102,45 @@ cv::Mat SeamSmooth::seam_smooth(const cv::Mat& img)
     return img_smooth;
 }
 
+/*
+方案1: 
+空白dst, right粘贴到右边，left clone到左边，right clone到右边
+
+方案2: 接缝附近变成黑白; 接缝被模糊了
+dst = img.clone(); 缝高斯模糊；clone right, clone left
+*/
+cv::Mat SeamSmooth::seam_possion(const cv::Mat& img)
+{
+    const int half_w = seam_width_ / 2;
+
+    cv::Mat dst = img.clone();
+    cv::imwrite("./dst.png", dst);
+
+    // 底图全图进行高斯模糊
+    // cv::Mat dst_mid = dst(cv::Rect(half_w - 40, 0, 80, dst.rows));
+    // cv::Mat dst_gauss;
+    // cv::GaussianBlur(dst_mid, dst_gauss, cv::Size(17, 17), 15.0, 15.0);
+    // dst_gauss.copyTo(dst(cv::Rect(half_w - 40, 0, 80, dst.rows)));
+    // cv::imwrite("./dst_gauss.png", dst);
+
+    cv::Mat right = img.rowRange(0, img.rows).colRange(img.cols - half_w, img.cols).clone();
+    cv::Mat left = img.rowRange(0, img.rows).colRange(0, half_w).clone();
+
+    cv::Mat mask = cv::Mat::zeros(right.size(), CV_8UC1);
+    // mask.rowRange(0, mask.rows).colRange(half_w - 10, half_w + 10) = 255;
+    mask += 255;
+
+    cv::imwrite("./src.png", right);
+    cv::imwrite("./mask.png", mask);
+
+    cv::seamlessClone(left, dst, mask, cv::Point2i(half_w / 2, dst.rows / 2), dst, 3);
+    cv::imwrite("./result_1.png", dst);
+    cv::seamlessClone(right, dst, mask, cv::Point2i(half_w + half_w / 2, dst.rows / 2), dst, 3);
+    cv::imwrite("./result_2.png", dst);
+
+    return dst;
+}
+
 void SeamSmooth::apply_left_right(const cv::Mat& img_smooth, cv::Mat& img)
 {
     const int half_width = seam_width_ / 2;
@@ -113,7 +152,7 @@ void SeamSmooth::apply_left_right(const cv::Mat& img_smooth, cv::Mat& img)
 
 cv::Mat SeamSmooth::seam_inpaint(const cv::Mat& img)
 {
-    cv::Mat mask = gen_seam_mask(img);
+    cv::Mat mask = gen_seam_mask(img, 40);
     cv::imwrite("./mask.png", mask);
     
     cv::Mat img_3;
@@ -128,11 +167,11 @@ cv::Mat SeamSmooth::seam_inpaint(const cv::Mat& img)
 }
 
 // call once
-cv::Mat SeamSmooth::gen_seam_mask(const cv::Mat& img)
+cv::Mat SeamSmooth::gen_seam_mask(const cv::Mat& img, int half_w)
 {
     cv::Mat mask = cv::Mat::zeros(img.size(), CV_8UC1);
     int line_x = img.cols / 2;
-    int line_half_w = std::min(40, seam_width_ / 2);
+    int line_half_w = std::min(half_w, seam_width_ / 2);
     mask.rowRange(0, img.rows).colRange(line_x - line_half_w, line_x + line_half_w) = 255;
 
     return mask;

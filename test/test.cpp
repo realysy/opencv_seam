@@ -46,6 +46,9 @@ int main(int argc, char* argv[])
 
         cv::Mat img = cv::imread(path_img, cv::IMREAD_UNCHANGED);
 
+        // cv::imwrite(folder + "/left.tif", img(cv::Rect(0, 0, img.cols/2, img.rows)));
+        // cv::imwrite(folder + "/right.tif", img(cv::Rect(img.cols/2, 0, img.cols/2, img.rows)));
+
         int vis_width = 200;
         cv::Mat img_compare(cv::Size2i(vis_width * 4 + 30, img.rows), img.type(), cv::Scalar(0,0,0,0));
         // 平滑前的接缝
@@ -53,8 +56,8 @@ int main(int argc, char* argv[])
         img.rowRange(0, img.rows).colRange(0, vis_width).copyTo(img_compare(cv::Rect(vis_width, 0, vis_width, img.rows)));
 
         cv::Mat img_seam = seam_smoother.join_left_right(img);
-        cv::Mat img_smooth = seam_smoother.seam_smooth(img_seam);
-        // cv::Mat img_smooth = seam_smoother.seam_inpaint(img_seam);
+        // cv::Mat img_smooth = seam_smoother.seam_smooth(img_seam);
+        cv::Mat img_smooth = seam_smoother.seam_possion(img_seam);
         seam_smoother.apply_left_right(img_smooth, img);
 
         // cv::imwrite(path_seam_raw, img_seam);
